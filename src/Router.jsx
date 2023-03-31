@@ -1,7 +1,8 @@
 import { EVENTS } from './const'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Children } from 'react'
+import { match } from 'path-to-regexp'
 
-export default function Router ({ routes = [], defaultComponent: DefaultComponent = () => <h1>404</h1> }) {
+export default function Router ({ children, routes = [], defaultComponent: DefaultComponent = () => <h1>404</h1> }) {
   const [currentPath, setCurrentPath] = useState(window.location.pathname)
 
   useEffect(() => {
@@ -17,10 +18,33 @@ export default function Router ({ routes = [], defaultComponent: DefaultComponen
       window.removeEventListener(EVENTS.POPSTATE, onLocationChange)
     }
   }, [])
-  const ComponentToRender = routes.find(({ path }) => path === currentPath)?.Component
+
+  let routeParams = {}
+
+  // Add routes from children <Route /> components
+  const routesFromChildren = Children.map(children, ({ props, type }) => {
+    const { name } = type
+    const isRoute = name === 'Route'
+    return isRoute ? props : null
+  })
+
+  const routesToUse = routes.concat(routesFromChildren)
+
+  const Page = routesToUse.find(({ path }) => {
+    if (path === currentPath) return true
+
+    const matcherURL = match(path, { decode: decodeURIComponent })
+    const matched = matcherURL(currentPath)
+    if (!matched) return false
+
+    routeParams = matched.params
+    return true
+  })?.Component
 
   return (
-    ComponentToRender ? <ComponentToRender /> : <DefaultComponent />
+    Page
+      ? <Page routeParams={routeParams} />
+      : <DefaultComponent routeParams={routeParams} />
 
   )
 }
