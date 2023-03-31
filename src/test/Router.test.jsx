@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 import Router from '../Router'
-import Route from '../pages/Route'
+import Route from '../Route'
 import { Link } from '../Link'
 import { getCurrentPath } from '../utils'
 
