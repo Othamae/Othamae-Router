@@ -15,6 +15,7 @@ export function Link ({ target, to, ...props }) {
     if (isMainEvent && !isModifiedEvent && isManageableEvent) { // it will navegate as SPA
       event.preventDefault()
       navigate(to)
+      window.scrollTo(0, 0)
     }
   }
 
